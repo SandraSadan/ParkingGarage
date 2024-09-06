@@ -1,0 +1,32 @@
+<div class="parent">
+    <h2 class="heading">Vehicle Parking</h2>
+    <form [formGroup]="vehicleAddForm" (ngSubmit)="markVehicleEntry()">
+        <div style="padding: 10px;">
+            <label for="id">
+                Vehicle ID: 
+                <span [ngClass]="{'alert': id?.touched && id?.hasError('required')}" *ngIf="id?.errors && id?.hasError('required')">*</span>
+            </label>
+            <input id="id" type="text" formControlName="id" />
+            <div class="alert" *ngIf="id?.invalid && (id?.dirty || id?.touched)">
+                <small class="alert alert-danger" *ngIf="id?.errors?.['required']">
+                    Vehicle Id is required!
+                </small>
+                <small class="alert alert-danger" *ngIf="id?.errors?.['minlength']">
+                    Vehicle Id must be at least 4 characters long.
+                </small>
+            </div>
+        </div>
+        <div style="padding: 10px;">
+            <label for="type">Vehicle Type: </label>
+            <select id="type" formControlName="type">
+                <option *ngFor="let parking of parkingTypes" [ngValue]="parking">{{ parking }}</option>
+            </select>
+        </div>
+        <div style="padding: 10px;">
+            <button mat-flat-button color="primary" type="submit" [disabled]="!vehicleAddForm.valid">Entry</button>
+        </div>
+    </form>
+</div>
+<hr>
+<app-parking-list [dataSource]="parkedVehicles" (exit)="markVehicleExit($event)"></app-parking-list>
+<router-outlet></router-outlet>

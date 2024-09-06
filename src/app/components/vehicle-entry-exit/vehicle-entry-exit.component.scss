@@ -1,0 +1,14 @@
+.alert {
+    color: red;
+}
+
+input.ng-touched.ng-invalid {
+    border: 2px solid red;
+}
+
+.parent {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
