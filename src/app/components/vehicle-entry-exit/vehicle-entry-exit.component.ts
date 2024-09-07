@@ -23,6 +23,7 @@ export class VehicleEntryExitComponent {
     isParked: new FormControl(false),
     entryTime: new FormControl()
   });
+  displayForm: boolean = false;
 
   parkingSlots : ParkingSlot = {
     'Regular': 10,
@@ -51,6 +52,7 @@ export class VehicleEntryExitComponent {
       });
       this.parkedVehicles.push(this.vehicleAddForm.value as VehicleDetails);
       this.parkedVehicles = [...this.parkedVehicles];
+      this.displayForm = false;
       this.openSnackBar('Vehicled added to parking successfully!', 'Close', 5000);
       this.parkingSlots[vehicleType]--;
       this.vehicleAddForm.reset();

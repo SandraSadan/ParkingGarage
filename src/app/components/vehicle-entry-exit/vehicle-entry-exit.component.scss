@@ -12,3 +12,9 @@ input.ng-touched.ng-invalid {
     align-items: center;
     flex-direction: column;
 }
+
+.add-vehicle-btn {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px;
+}

@@ -1,4 +1,7 @@
-<div class="parent">
+<div class="add-vehicle-btn" *ngIf="!displayForm">
+    <button mat-flat-button color="primary" (click)="displayForm=true">Add Vehicle</button>
+</div>
+<div class="parent" *ngIf="displayForm">
     <h2 class="heading">Vehicle Parking</h2>
     <form [formGroup]="vehicleAddForm" (ngSubmit)="markVehicleEntry()">
         <div style="padding: 10px;">
