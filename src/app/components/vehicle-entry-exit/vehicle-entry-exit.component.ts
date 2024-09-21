@@ -6,11 +6,13 @@ import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angula
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ParkingListComponent } from "../parking-list/parking-list/parking-list.component";
 import { MatButtonModule } from '@angular/material/button';
+import { PaymentService } from '../../services/payment.service';
 
 @Component({
   selector: 'app-vehicle-entry-exit',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterOutlet, CommonModule, MatSnackBarModule, ParkingListComponent, MatButtonModule],
+  imports: [ReactiveFormsModule, RouterOutlet, CommonModule,
+    MatSnackBarModule, ParkingListComponent, MatButtonModule],
   templateUrl: './vehicle-entry-exit.component.html',
   styleUrl: './vehicle-entry-exit.component.scss',
 })
@@ -32,7 +34,8 @@ export class VehicleEntryExitComponent {
   }
   parkedVehicles: VehicleDetails[] = [];
 
-  constructor(private matSnackBar: MatSnackBar) { }
+  constructor(private matSnackBar: MatSnackBar,
+    private paymentService: PaymentService) { }
 
   openSnackBar(message: string, action: string, duration?: number) {
     this.matSnackBar.open(message, action, { duration });
@@ -61,8 +64,26 @@ export class VehicleEntryExitComponent {
     }
   }
 
-  markVehicleExit(vehicleID: string) {
-    this.parkedVehicles =  this.parkedVehicles.filter(obj => obj.id !== vehicleID);
+  markVehicleExit(vehicleID: string): void {
+    this.processExitPayment(vehicleID);
+    this.parkedVehicles = this.parkedVehicles.filter(obj => obj.id !== vehicleID);
     this.openSnackBar('Vehicled removed from parking successfully!', 'X', 5000)
+  }
+
+  processExitPayment(vehicleID: string): void {
+    const currentVehicle = this.parkedVehicles.find(obj => obj.id === vehicleID) as VehicleDetails;
+    if (!currentVehicle) {
+      this.openSnackBar('Vehicle not found. Please try again.', 'X', 5000);
+      return;
+    }
+
+    try {
+      const amountToPay = this.paymentService.calculatePayment(currentVehicle.entryTime);
+      this.openSnackBar(`The amount to pay is Rs. ${amountToPay}`, 'X', 5000);
+      console.log(`Payment for vehicle ${vehicleID}: Rs. ${amountToPay}`);
+    } catch (error) {
+      this.openSnackBar('Error processing payment. Please try again.', 'X', 5000);
+      console.error('Payment processing error:', error);
+    }
   }
 }

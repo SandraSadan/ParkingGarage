@@ -1,7 +1,7 @@
 export interface VehicleDetails {
     id?: string;
     type: string;
-    entryTime?: Date;
+    entryTime: Date;
     exitTime?: Date;
     isParked: boolean;
 }
