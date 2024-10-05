@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>Welcome to Parking Payment</h2>
+
+<mat-dialog-content>
+  <div>
+    <h3>Your payment details</h3>
+    <p>Amount: {{ data[0] }}</p>
+    <p>Duration{{ data[1] }} minutes</p>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" style="display: flex">
+  <button mat-raised-button color="warn" (click)="close()">Close</button>
+  <button mat-raised-button color="primary" (click)="pay()">Pay</button>
+</mat-dialog-actions>

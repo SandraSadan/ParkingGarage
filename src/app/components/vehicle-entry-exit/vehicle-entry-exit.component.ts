@@ -7,12 +7,14 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ParkingListComponent } from "../parking-list/parking-list/parking-list.component";
 import { MatButtonModule } from '@angular/material/button';
 import { PaymentService } from '../../services/payment.service';
+import { MatDialogConfig, MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { PaymentDialogComponent } from '../dialog/payment-dialog/payment-dialog.component';
 
 @Component({
   selector: 'app-vehicle-entry-exit',
   standalone: true,
   imports: [ReactiveFormsModule, RouterOutlet, CommonModule,
-    MatSnackBarModule, ParkingListComponent, MatButtonModule],
+    MatSnackBarModule, ParkingListComponent, MatButtonModule, MatDialogModule],
   templateUrl: './vehicle-entry-exit.component.html',
   styleUrl: './vehicle-entry-exit.component.scss',
 })
@@ -26,7 +28,6 @@ export class VehicleEntryExitComponent {
     entryTime: new FormControl()
   });
   displayForm: boolean = false;
-
   parkingSlots : ParkingSlot = {
     'Regular': 10,
     'Compact': 6,
@@ -35,7 +36,9 @@ export class VehicleEntryExitComponent {
   parkedVehicles: VehicleDetails[] = [];
 
   constructor(private matSnackBar: MatSnackBar,
-    private paymentService: PaymentService) { }
+    private paymentService: PaymentService,
+    private dialog: MatDialog
+  ) { }
 
   openSnackBar(message: string, action: string, duration?: number) {
     this.matSnackBar.open(message, action, { duration });
@@ -45,7 +48,7 @@ export class VehicleEntryExitComponent {
     return this.vehicleAddForm.get('id');
   }
 
-  markVehicleEntry() {
+  markVehicleEntry(): void {
     const vehicleType = (this.vehicleAddForm.get('type')?.value) || 'Regular';
     const isParkingAvailable: boolean = this.parkingSlots[vehicleType] > 0;
     if (isParkingAvailable) {
@@ -65,25 +68,31 @@ export class VehicleEntryExitComponent {
   }
 
   markVehicleExit(vehicleID: string): void {
-    this.processExitPayment(vehicleID);
-    this.parkedVehicles = this.parkedVehicles.filter(obj => obj.id !== vehicleID);
-    this.openSnackBar('Vehicled removed from parking successfully!', 'X', 5000)
-  }
-
-  processExitPayment(vehicleID: string): void {
     const currentVehicle = this.parkedVehicles.find(obj => obj.id === vehicleID) as VehicleDetails;
     if (!currentVehicle) {
       this.openSnackBar('Vehicle not found. Please try again.', 'X', 5000);
       return;
     }
-
     try {
-      const amountToPay = this.paymentService.calculatePayment(currentVehicle.entryTime);
-      this.openSnackBar(`The amount to pay is Rs. ${amountToPay}`, 'X', 5000);
-      console.log(`Payment for vehicle ${vehicleID}: Rs. ${amountToPay}`);
+      const paymentDetails = this.paymentService.calculatePayment(currentVehicle.entryTime);
+      this.openDialog(paymentDetails, vehicleID);
     } catch (error) {
       this.openSnackBar('Error processing payment. Please try again.', 'X', 5000);
       console.error('Payment processing error:', error);
     }
+  }
+
+  openDialog(paymentDetails: number[], vehicleID: string): void {
+    const dialogConfig = new MatDialogConfig();
+      dialogConfig.disableClose = true;
+      dialogConfig.autoFocus = true;
+      dialogConfig.data = paymentDetails;
+    const dialogRef = this.dialog.open(PaymentDialogComponent, dialogConfig);
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+       if (result) {
+        this.parkedVehicles = this.parkedVehicles.filter(obj => obj.id !== vehicleID);
+        this.openSnackBar('Vehicled removed from parking successfully!', 'X', 5000);
+      }
+    });
   }
 }
