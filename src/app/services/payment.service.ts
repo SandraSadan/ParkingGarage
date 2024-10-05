@@ -11,7 +11,7 @@ export class PaymentService {
 
   constructor() { }
 
-  calculatePayment(entryTime: Date): number {
+  calculatePayment(entryTime: Date): number[] {
     const currentTime = Date.now();
     const minutes = this.calculateMinutes(entryTime, currentTime);
 
@@ -26,13 +26,13 @@ export class PaymentService {
     return Math.round(Math.abs(currentTime - entryTime.getTime()) / 60000);
   }
 
-  private calculateAmount(minutes: number): number {
+  private calculateAmount(minutes: number): number[] {
     if (minutes < 60) {
-      return this.payPerMin * minutes;
+      return [this.payPerMin * minutes, minutes];
     } else {
       const hours = Math.floor(minutes / 60);
       const balanceMin = minutes % 60;
-      return (this.payPerHour * hours) + (this.payPerMin * balanceMin);
+      return [(this.payPerHour * hours) + (this.payPerMin * balanceMin), minutes];
     }
   }
 
