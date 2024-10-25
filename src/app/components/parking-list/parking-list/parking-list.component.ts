@@ -1,6 +1,7 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { VehicleDetails } from '../../../interfaces/vehicle';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
@@ -8,18 +9,23 @@ import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/p
 @Component({
   selector: 'app-parking-list',
   standalone: true,
-  imports: [MatTableModule, CommonModule, MatButtonModule, MatPaginatorModule],
+  imports: [MatTableModule, CommonModule, MatButtonModule, MatPaginatorModule, MatSortModule],
   templateUrl: './parking-list.component.html',
-  styleUrl: './parking-list.component.scss'
+  styleUrls: ['./parking-list.component.scss']
 })
-export class ParkingListComponent implements OnInit, AfterViewInit {
+export class ParkingListComponent implements AfterViewInit {
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
   _dataSource!: VehicleDetails[];
   dataWithPagination!: MatTableDataSource<VehicleDetails>;
+
   @Input("dataSource") 
   set dataSource(value: VehicleDetails[]) 
   { 
     this._dataSource = value;
     this.dataWithPagination = new MatTableDataSource(this._dataSource);
+    this.length = this._dataSource.length;
+    this.updatePaginator(); 
   }
   get dataSource() 
   { 
@@ -27,25 +33,29 @@ export class ParkingListComponent implements OnInit, AfterViewInit {
   }
   pageSize = 5;
   length = 100;
-  displayedColumns: string[] = ['vehicleID', 'type', 'isParked', 'time', 'action'];
+  displayedColumns: string[] = ['id', 'type', 'isParked', 'entryTime', 'action'];
   @Output() exit = new EventEmitter();
-  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
-    this.dataWithPagination.paginator = paginator;
-  };
 
   constructor() { }
   
-  ngOnInit() {
-    this.dataWithPagination = new MatTableDataSource(this._dataSource);
-  }
-
   // After the view has been initialized, assign the paginator to the table data source
   ngAfterViewInit() {
-    this.dataWithPagination.paginator = this.paginator;
+    this.updatePaginator();
+  }
+
+  updatePaginator() {
+    if (this.paginator) {
+      this.dataWithPagination.paginator = this.paginator;
+      this.dataWithPagination.sort = this.sort;
+      this.paginator.length = this._dataSource.length; // Set paginator length to data source length
+      this.paginator.firstPage(); // Reset to first page when data changes
+    }
   }
 
   markExit(vehicleId: string) {
-    this.exit.emit(vehicleId);
+   if (vehicleId) {
+      this.exit.emit(vehicleId);
+    }
   }
 
   handlePageEvent(e: PageEvent) {
